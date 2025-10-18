@@ -7,38 +7,40 @@
     </div>
     
 <!-- Incident Details -->
-    <%= for {_, incident} <- @streams.incident do %>
-      <div class="bg-white rounded-lg shadow p-6 mb-8 border-l-4 border-red-500">
-        <div class="flex items-start justify-between mb-4">
-          <div>
-            <div class="flex items-center gap-3 mb-2">
-              <span class="font-mono text-lg text-gray-600">
-                <%= incident.incident_number %>
-              </span>
-              <span class={"px-3 py-1 text-sm rounded font-semibold #{priority_class(incident.priority)}"}>
-                <%= String.upcase(to_string(incident.priority)) %>
-              </span>
-              <span class={"px-3 py-1 text-sm rounded font-semibold #{status_class(incident.status)}"}>
-                <%= String.upcase(to_string(incident.status)) %>
-              </span>
+    <div id="incident_details" phx-update="stream">
+      <%= for {dom_id, incident} <- @streams.incident do %>
+        <div id={dom_id} class="bg-white rounded-lg shadow p-6 mb-8 border-l-4 border-red-500">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-lg text-gray-600">
+                  <%= incident.incident_number %>
+                </span>
+                <span class={"px-3 py-1 text-sm rounded font-semibold #{priority_class(incident.priority)}"}>
+                  <%= String.upcase(to_string(incident.priority)) %>
+                </span>
+                <span class={"px-3 py-1 text-sm rounded font-semibold #{status_class(incident.status)}"}>
+                  <%= String.upcase(to_string(incident.status)) %>
+                </span>
+              </div>
+              <h1 class="text-3xl font-bold text-zinc-900 mb-2"><%= incident.incident_type %></h1>
+              <p class="text-gray-600 mb-4"><%= incident.description %></p>
+              <p class="text-gray-500">
+                <span class="font-semibold">Location:</span>
+                <%= incident.location %>
+              </p>
+              <p class="text-gray-500 text-sm mt-2">
+                <span class="font-semibold">Reported:</span>
+                <%= Calendar.strftime(incident.reported_at, "%B %d, %Y at %I:%M %p") %>
+              </p>
+              <p class="text-gray-500 text-xs mt-3">
+                <.link navigate={~p"/incidents/#{@incident_id}"}>Show</.link>
+              </p>
             </div>
-            <h1 class="text-3xl font-bold text-zinc-900 mb-2"><%= incident.incident_type %></h1>
-            <p class="text-gray-600 mb-4"><%= incident.description %></p>
-            <p class="text-gray-500">
-              <span class="font-semibold">Location:</span>
-              <%= incident.location %>
-            </p>
-            <p class="text-gray-500 text-sm mt-2">
-              <span class="font-semibold">Reported:</span>
-              <%= Calendar.strftime(incident.reported_at, "%B %d, %Y at %I:%M %p") %>
-            </p>
-            <p class="text-gray-500 text-xs mt-3">
-              <.link navigate={~p"/incidents/#{@incident_id}"}>Show</.link>
-            </p>
           </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Assigned Superheroes -->
