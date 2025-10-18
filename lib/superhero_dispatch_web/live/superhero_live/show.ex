@@ -10,10 +10,10 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Show do
         <:subtitle>This is a superhero record from your database.</:subtitle>
 
         <:actions>
-          <.button navigate={~p"/superheros"}>
+          <.button navigate={~p"/superheroes"}>
             <.icon name="hero-arrow-left" />
           </.button>
-          <.button variant="primary" navigate={~p"/superheros/#{@superhero}/edit?return_to=show"}>
+          <.button variant="primary" navigate={~p"/superheroes/#{@superhero}/edit?return_to=show"}>
             <.icon name="hero-pencil-square" /> Edit Superhero
           </.button>
         </:actions>

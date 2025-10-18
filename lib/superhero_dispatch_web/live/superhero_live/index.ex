@@ -6,18 +6,18 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Index do
     ~H"""
     <Layouts.app flash={@flash}>
       <.header>
-        Listing Superheros
+        Listing Superheroes
         <:actions>
-          <.button variant="primary" navigate={~p"/superheros/new"}>
+          <.button variant="primary" navigate={~p"/superheroes/new"}>
             <.icon name="hero-plus" /> New Superhero
           </.button>
         </:actions>
       </.header>
 
       <.table
-        id="superheros"
-        rows={@streams.superheros}
-        row_click={fn {_id, superhero} -> JS.navigate(~p"/superheros/#{superhero}") end}
+        id="superheroes"
+        rows={@streams.superheroes}
+        row_click={fn {_id, superhero} -> JS.navigate(~p"/superheroes/#{superhero}") end}
       >
         <:col :let={{_id, superhero}} label="Id">{superhero.id}</:col>
 
@@ -33,10 +33,10 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Index do
 
         <:action :let={{_id, superhero}}>
           <div class="sr-only">
-            <.link navigate={~p"/superheros/#{superhero}"}>Show</.link>
+            <.link navigate={~p"/superheroes/#{superhero}"}>Show</.link>
           </div>
 
-          <.link navigate={~p"/superheros/#{superhero}/edit"}>Edit</.link>
+          <.link navigate={~p"/superheroes/#{superhero}/edit"}>Edit</.link>
         </:action>
 
         <:action :let={{id, superhero}}>
@@ -56,8 +56,8 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Index do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Listing Superheros")
-     |> stream(:superheros, Ash.read!(SuperheroDispatch.Dispatch.Superhero))}
+     |> assign(:page_title, "Listing Superheroes")
+     |> stream(:superheroes, Ash.read!(SuperheroDispatch.Dispatch.Superhero))}
   end
 
   @impl true
@@ -65,6 +65,6 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Index do
     superhero = Ash.get!(SuperheroDispatch.Dispatch.Superhero, id)
     Ash.destroy!(superhero)
 
-    {:noreply, stream_delete(socket, :superheros, superhero)}
+    {:noreply, stream_delete(socket, :superheroes, superhero)}
   end
 end

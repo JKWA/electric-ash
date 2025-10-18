@@ -104,6 +104,6 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Form do
     assign(socket, form: to_form(form))
   end
 
-  defp return_path("index", _superhero), do: ~p"/superheros"
-  defp return_path("show", superhero), do: ~p"/superheros/#{superhero.id}"
+  defp return_path("index", _superhero), do: ~p"/superheroes"
+  defp return_path("show", superhero), do: ~p"/superheroes/#{superhero.id}"
 end

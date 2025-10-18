@@ -51,7 +51,7 @@ defmodule SuperheroDispatchWeb.Layouts do
           </li>
           <li>
             <a href="/" class="btn btn-primary">
-              Home <span aria-hidden="true">&rarr;</span>
+              Dispatch <span aria-hidden="true">&rarr;</span>
             </a>
           </li>
         </ul>

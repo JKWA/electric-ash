@@ -27,10 +27,10 @@ defmodule SuperheroDispatchWeb.Router do
     live "/incidents/:id", IncidentLive.Show, :show
     live "/incidents/:id/show/edit", IncidentLive.Show, :edit
 
-    live "/superheros", SuperheroLive.Index, :index
-    live "/superheros/new", SuperheroLive.Form, :new
-    live "/superheros/:id", SuperheroLive.Show
-    live "/superheros/:id/edit", SuperheroLive.Form, :edit
+    live "/superheroes", SuperheroLive.Index, :index
+    live "/superheroes/new", SuperheroLive.Form, :new
+    live "/superheroes/:id", SuperheroLive.Show
+    live "/superheroes/:id/edit", SuperheroLive.Form, :edit
   end
 
   # Other scopes may use custom stacks.
