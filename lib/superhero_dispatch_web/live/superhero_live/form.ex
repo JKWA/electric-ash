@@ -16,26 +16,14 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Form do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Name" /><.input
-          field={@form[:hero_alias]}
-          type="text"
-          label="Hero alias"
-        /><.input
+        <.input field={@form[:name]} type="text" label="Name" />
+        <.input field={@form[:hero_alias]} type="text" label="Hero alias" />
+        <.input
           field={@form[:powers]}
           type="select"
           multiple
           label="Powers"
           options={[{"Option 1", "option1"}, {"Option 2", "option2"}]}
-        />
-        <.input
-          field={@form[:status]}
-          type="select"
-          label="Status"
-          options={
-            Ash.Resource.Info.attribute(SuperheroDispatch.Dispatch.Superhero, :status).constraints[
-              :one_of
-            ]
-          }
         />
         <.input field={@form[:current_location]} type="text" label="Current location" />
 

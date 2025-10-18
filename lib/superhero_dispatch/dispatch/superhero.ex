@@ -55,14 +55,14 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
 
     create :create do
       primary? true
-      accept [:name, :hero_alias, :powers, :status, :current_location]
+      accept [:name, :hero_alias, :powers, :current_location]
     end
 
     update :update do
       primary? true
       require_atomic? false
 
-      accept [:name, :hero_alias, :powers, :status, :current_location]
+      accept [:name, :hero_alias, :powers, :current_location]
 
       change after_action(fn changeset, superhero, _ctx ->
                # Only update assignment status if the superhero's status actually changed
