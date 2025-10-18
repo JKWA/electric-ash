@@ -63,6 +63,12 @@ defmodule SuperheroDispatch.Dispatch.Incident do
       public? true
     end
 
+    attribute :hero_count, :integer do
+      default 0
+      allow_nil? false
+      public? true
+    end
+
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
@@ -107,6 +113,24 @@ defmodule SuperheroDispatch.Dispatch.Incident do
       accept []
       change set_attribute(:status, :closed)
       change set_attribute(:closed_at, expr(now()))
+    end
+
+    update :hero_count do
+      require_atomic? false
+      accept []
+
+      change fn changeset, _ ->
+        incident_id = changeset.data.id
+        require Ash.Query
+
+        count =
+          SuperheroDispatch.Dispatch.Assignment
+          |> Ash.Query.filter(incident_id == ^incident_id)
+          |> Ash.read!(authorize?: false)
+          |> Enum.count()
+
+        Ash.Changeset.change_attribute(changeset, :hero_count, count)
+      end
     end
   end
 end

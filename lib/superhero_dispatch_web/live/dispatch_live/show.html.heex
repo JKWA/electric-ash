@@ -33,6 +33,10 @@
                 <span class="font-semibold">Reported:</span>
                 <%= Calendar.strftime(incident.reported_at, "%B %d, %Y at %I:%M %p") %>
               </p>
+              <p class="text-gray-600 text-sm mb-2">
+                        <span class="font-semibold">Heroes Dispatched:</span>
+                        {incident.hero_count}
+                      </p>
               <p class="text-gray-500 text-xs mt-3">
                 <.link navigate={~p"/incidents/#{@incident_id}"}>Show</.link>
               </p>

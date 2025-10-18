@@ -3,6 +3,8 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
     domain: SuperheroDispatch.Dispatch,
     data_layer: AshPostgres.DataLayer
 
+  require Logger
+
   postgres do
     table("assignments")
     repo(SuperheroDispatch.Repo)
@@ -103,6 +105,14 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
                  SuperheroDispatch.Dispatch.mark_superhero_dispatched!(assignment.superhero_id)
                end
 
+               Logger.info("Updating hero count for incident: #{assignment.incident_id}")
+
+               incident = SuperheroDispatch.Dispatch.get_incident!(assignment.incident_id)
+
+               incident
+               |> Ash.Changeset.for_update(:hero_count)
+               |> Ash.update!(authorize?: false)
+
                {:ok, assignment}
              end)
     end
@@ -139,6 +149,12 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
                if assignment.superhero_id do
                  SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)
                end
+
+               incident = SuperheroDispatch.Dispatch.get_incident!(assignment.incident_id)
+
+               incident
+               |> Ash.Changeset.for_update(:hero_count)
+               |> Ash.update!(authorize?: false)
 
                {:ok, assignment}
              end)

@@ -29,6 +29,7 @@ defmodule SuperheroDispatch.Dispatch do
       define(:mark_incident_in_progress, action: :mark_in_progress)
       define(:mark_incident_resolved, action: :mark_resolved)
       define(:mark_incident_closed, action: :mark_closed)
+      define(:update_hero_count, action: :hero_count)
     end
 
     resource SuperheroDispatch.Dispatch.Assignment do
