@@ -79,19 +79,30 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
     {:noreply, sync_stream_update(socket, event)}
   end
 
-  defp priority_class(:critical), do: "bg-red-100 text-red-800"
-  defp priority_class(:high), do: "bg-orange-100 text-orange-800"
-  defp priority_class(:medium), do: "bg-yellow-100 text-yellow-800"
-  defp priority_class(:low), do: "bg-green-100 text-green-800"
+  # Helper functions for styling using DaisyUI badge variants
+  defp priority_class(:critical), do: "badge-error"
+  defp priority_class(:high), do: "badge-warning"
+  defp priority_class(:medium), do: "badge-info"
+  defp priority_class(:low), do: "badge-success"
 
-  defp status_class(:reported), do: "bg-blue-100 text-blue-800"
-  defp status_class(:dispatched), do: "bg-purple-100 text-purple-800"
-  defp status_class(:in_progress), do: "bg-amber-100 text-amber-800"
-  defp status_class(:resolved), do: "bg-green-100 text-green-800"
-  defp status_class(:closed), do: "bg-gray-100 text-gray-800"
+  defp priority_border_class(:critical), do: "border-error"
+  defp priority_border_class(:high), do: "border-warning"
+  defp priority_border_class(:medium), do: "border-info"
+  defp priority_border_class(:low), do: "border-success"
 
-  defp assignment_status_class(:assigned), do: "bg-blue-100 text-blue-800"
-  defp assignment_status_class(:en_route), do: "bg-purple-100 text-purple-800"
-  defp assignment_status_class(:on_scene), do: "bg-orange-100 text-orange-800"
-  defp assignment_status_class(:completed), do: "bg-green-100 text-green-800"
+  defp status_class(:reported), do: "badge-info"
+  defp status_class(:dispatched), do: "badge-primary"
+  defp status_class(:in_progress), do: "badge-warning"
+  defp status_class(:resolved), do: "badge-success"
+  defp status_class(:closed), do: "badge-ghost"
+
+  defp hero_status_class(:available), do: "badge-success"
+  defp hero_status_class(:dispatched), do: "badge-primary"
+  defp hero_status_class(:on_scene), do: "badge-warning"
+  defp hero_status_class(:off_duty), do: "badge-ghost"
+
+  defp assignment_status_class(:assigned), do: "badge-info"
+  defp assignment_status_class(:en_route), do: "badge-primary"
+  defp assignment_status_class(:on_scene), do: "badge-warning"
+  defp assignment_status_class(:completed), do: "badge-success"
 end
