@@ -77,10 +77,12 @@ defmodule SuperheroDispatch.Dispatch.Incident do
     defaults [:read, :destroy]
 
     create :create do
+      primary? true
       accept [:incident_number, :incident_type, :description, :location, :priority]
     end
 
     update :update do
+      primary? true
       accept [:incident_type, :description, :location, :priority, :status]
     end
 
