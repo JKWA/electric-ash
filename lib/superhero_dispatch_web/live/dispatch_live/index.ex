@@ -16,12 +16,6 @@ defmodule SuperheroDispatchWeb.DispatchLive.Index do
   end
 
   @impl true
-  def handle_event("refresh", _params, socket) do
-    # With sync_stream, data refreshes automatically
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_info({:sync, event}, socket) do
     {:noreply, sync_stream_update(socket, event)}
   end
