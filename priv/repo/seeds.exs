@@ -23,7 +23,6 @@ Dispatch.create_superhero!(
   "Wonder Woman",
   %{
     powers: ["Super Strength", "Flight", "Combat Skills", "Lasso of Truth"],
-    status: :available,
     current_location: "Themyscira Embassy"
   }
 )
@@ -33,7 +32,6 @@ Dispatch.create_superhero!(
   "The Flash",
   %{
     powers: ["Super Speed", "Time Travel", "Phase Through Objects"],
-    status: :available,
     current_location: "Central City"
   }
 )
@@ -43,7 +41,6 @@ Dispatch.create_superhero!(
   "Batman",
   %{
     powers: ["Detective Skills", "Martial Arts", "Gadgets", "Tactics"],
-    status: :available,
     current_location: "Wayne Manor"
   }
 )
@@ -53,7 +50,6 @@ Dispatch.create_superhero!(
   "Superman",
   %{
     powers: ["Super Strength", "Flight", "Heat Vision", "X-Ray Vision", "Invulnerability"],
-    status: :available,
     current_location: "Downtown Metropolis"
   }
 )
@@ -63,7 +59,6 @@ Dispatch.create_superhero!(
   "Green Lantern",
   %{
     powers: ["Energy Constructs", "Flight", "Force Fields"],
-    status: :available,
     current_location: "Coast City"
   }
 )

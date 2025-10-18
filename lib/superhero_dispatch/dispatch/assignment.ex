@@ -1,13 +1,18 @@
 defmodule SuperheroDispatch.Dispatch.Assignment do
   use Ash.Resource,
     domain: SuperheroDispatch.Dispatch,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshArchival.Resource]
 
   require Logger
 
   postgres do
     table("assignments")
     repo(SuperheroDispatch.Repo)
+  end
+
+  archive do
+    exclude_read_actions([:archived])
   end
 
   attributes do
@@ -26,13 +31,14 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
     end
 
     attribute :superhero_alias, :string do
-      allow_nil?(true)
+      allow_nil?(false)
       public?(true)
     end
 
     attribute :superhero_status, :atom do
-      constraints(one_of: [:available, :dispatched, :on_scene, :off_duty])
-      allow_nil?(true)
+      constraints(one_of: [:dispatched])
+      default(:dispatched)
+      allow_nil?(false)
       public?(true)
     end
 
@@ -52,10 +58,6 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
 
     attribute :completed_at, :utc_datetime_usec do
       public?(true)
-    end
-
-    attribute :deleted_at, :utc_datetime_usec do
-      public?(false)
     end
 
     create_timestamp(:inserted_at)
@@ -83,6 +85,22 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         :superhero_id,
         :incident_id
       ])
+
+      validate fn changeset, _ ->
+        case SuperheroDispatch.Dispatch.get_superhero(
+               Ash.Changeset.get_attribute(changeset, :superhero_id)
+             ) do
+          {:ok, hero} ->
+            if hero.status == :available do
+              :ok
+            else
+              {:error, field: :superhero_id, message: "Hero must be available to be assigned. Current status: #{hero.status}"}
+            end
+
+          _ ->
+            {:error, field: :superhero_id, message: "Hero not found"}
+        end
+      end
 
       change fn changeset, _ ->
         case SuperheroDispatch.Dispatch.get_superhero(
@@ -119,7 +137,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
 
     update :update do
       primary? true
-      accept([:superhero_name, :superhero_alias, :superhero_status, :notes])
+      accept([:superhero_status, :notes])
     end
 
     update :mark_en_route do
@@ -139,12 +157,12 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       change(set_attribute(:completed_at, DateTime.utc_now()))
     end
 
-    update :soft_delete do
-      accept([])
-      change(set_attribute(:deleted_at, DateTime.utc_now()))
-    end
-
     destroy :destroy do
+      require_atomic? false
+      soft? true
+
+      change set_attribute(:archived_at, &DateTime.utc_now/0)
+
       change after_action(fn _changeset, assignment, _ctx ->
                if assignment.superhero_id do
                  SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)

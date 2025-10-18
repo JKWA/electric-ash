@@ -28,7 +28,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
   defp assignments_query(incident_id) do
     from a in Assignment,
-      where: a.incident_id == ^incident_id
+      where: a.incident_id == ^incident_id and is_nil(a.archived_at)
   end
 
   defp available_superheroes_query do
@@ -98,8 +98,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
   defp hero_status_class(:available), do: "badge-success"
   defp hero_status_class(:dispatched), do: "badge-primary"
-  defp hero_status_class(:on_scene), do: "badge-warning"
-  defp hero_status_class(:off_duty), do: "badge-ghost"
+  defp hero_status_class(:unavailable), do: "badge-ghost"
 
   defp assignment_status_class(:assigned), do: "badge-info"
   defp assignment_status_class(:en_route), do: "badge-primary"

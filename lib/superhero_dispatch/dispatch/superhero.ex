@@ -30,7 +30,7 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     end
 
     attribute :status, :atom do
-      constraints(one_of: [:available, :dispatched, :on_scene, :off_duty])
+      constraints(one_of: [:available, :unavailable, :dispatched])
       default(:available)
       allow_nil?(false)
       public?(true)
@@ -88,22 +88,34 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
 
     update :mark_dispatched do
       accept([])
-      change(set_attribute(:status, :dispatched))
-    end
 
-    update :mark_on_scene do
-      accept([])
-      change(set_attribute(:status, :on_scene))
+      validate(attribute_equals(:status, :available), message: "Can only dispatch available heroes")
+
+      change(set_attribute(:status, :dispatched))
     end
 
     update :mark_available do
       accept([])
+
+      validate(attribute_does_not_equal(:status, :unavailable), message: "Cannot mark unavailable hero as available through this action")
+
       change(set_attribute(:status, :available))
     end
 
-    update :mark_off_duty do
+    update :mark_unavailable do
       accept([])
-      change(set_attribute(:status, :off_duty))
+
+      validate(attribute_equals(:status, :available), message: "Can only mark available heroes as unavailable")
+
+      change(set_attribute(:status, :unavailable))
+    end
+
+    update :return_to_duty do
+      accept([])
+
+      validate(attribute_equals(:status, :unavailable), message: "Only unavailable heroes can return to duty")
+
+      change(set_attribute(:status, :available))
     end
   end
 end

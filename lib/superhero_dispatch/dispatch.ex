@@ -9,9 +9,9 @@ defmodule SuperheroDispatch.Dispatch do
       define(:update_superhero, action: :update)
       define(:delete_superhero, action: :destroy)
       define(:mark_superhero_dispatched, action: :mark_dispatched)
-      define(:mark_superhero_on_scene, action: :mark_on_scene)
       define(:mark_superhero_available, action: :mark_available)
-      define(:mark_superhero_off_duty, action: :mark_off_duty)
+      define(:mark_superhero_unavailable, action: :mark_unavailable)
+      define(:return_superhero_to_duty, action: :return_to_duty)
     end
 
     resource SuperheroDispatch.Dispatch.Incident do
@@ -41,7 +41,6 @@ defmodule SuperheroDispatch.Dispatch do
       define(:mark_assignment_en_route, action: :mark_en_route)
       define(:mark_assignment_on_scene, action: :mark_on_scene)
       define(:mark_assignment_completed, action: :mark_completed)
-      define(:soft_delete_assignment, action: :soft_delete)
     end
   end
 end

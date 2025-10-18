@@ -69,6 +69,7 @@ defmodule SuperheroDispatch.MixProject do
       {:ash, "~> 3.7.1"},
       {:ash_postgres, "~> 2.6.21"},
       {:ash_phoenix, "~> 2.3.16"},
+      {:ash_archival, "~> 1.0"},
       {:phoenix_sync, "~> 0.6"},
       {:electric, "~> 1.1"},
       {:sourceror, "~> 1.7", only: [:dev, :test], runtime: false},

@@ -39,6 +39,5 @@ defmodule SuperheroDispatchWeb.DispatchLive.Index do
 
   defp hero_status_class(:available), do: "badge-success"
   defp hero_status_class(:dispatched), do: "badge-primary"
-  defp hero_status_class(:on_scene), do: "badge-warning"
-  defp hero_status_class(:off_duty), do: "badge-ghost"
+  defp hero_status_class(:unavailable), do: "badge-ghost"
 end
