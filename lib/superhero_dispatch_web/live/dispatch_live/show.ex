@@ -7,7 +7,6 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
   alias SuperheroDispatch.Dispatch
   alias SuperheroDispatch.Dispatch.{Incident, Superhero, Assignment}
   import Ecto.Query
-  import Ash.Query
   require Ecto.Query
   require Logger
 
@@ -17,7 +16,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       socket
       |> assign(:page_title, "Incident Details")
       |> assign(:incident_id, id)
-      |> load_incident(id)
+      |> sync_stream(:incident, from(i in Incident, where: i.id == ^id), id_key: :id)
       |> sync_stream(:assignments, assignments_query(id),
         id_key: :id,
         reset?: true
@@ -25,27 +24,6 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       |> sync_stream(:superheroes, available_superheroes_query(), id_key: :id)
 
     {:ok, socket}
-  end
-
-  defp load_incident(socket, id) do
-    query = Incident |> filter(id == ^id)
-
-    case Ash.read_one(query) do
-      {:ok, %Incident{} = incident} ->
-        assign(socket, :incident, incident)
-
-      {:ok, nil} ->
-        socket
-        |> put_flash(:error, "Incident not found")
-        |> push_navigate(to: "/")
-
-      {:error, error} ->
-        Logger.error("Failed to load incident with ID #{id}: #{inspect(error)}")
-
-        socket
-        |> put_flash(:error, "Incident not found")
-        |> push_navigate(to: "/")
-    end
   end
 
   defp assignments_query(incident_id) do
@@ -62,7 +40,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
   def handle_event("assign_hero", %{"hero_id" => hero_id}, socket) do
     case Dispatch.create_assignment(%{
            superhero_id: hero_id,
-           incident_id: socket.assigns.incident.id
+           incident_id: socket.assigns.incident_id
          }) do
       {:ok, _assignment} ->
         {:noreply, put_flash(socket, :info, "Superhero assigned successfully")}
