@@ -1,0 +1,109 @@
+defmodule SuperheroDispatch.Dispatch.Superhero do
+  use Ash.Resource,
+    domain: SuperheroDispatch.Dispatch,
+    data_layer: AshPostgres.DataLayer
+
+  require Ash.Query
+  alias SuperheroDispatch.Dispatch.Assignment
+
+  postgres do
+    table("superheroes")
+    repo(SuperheroDispatch.Repo)
+  end
+
+  attributes do
+    uuid_primary_key(:id)
+
+    attribute :name, :string do
+      allow_nil?(false)
+      public?(true)
+    end
+
+    attribute :hero_alias, :string do
+      allow_nil?(false)
+      public?(true)
+    end
+
+    attribute :powers, {:array, :string} do
+      default([])
+      public?(true)
+    end
+
+    attribute :status, :atom do
+      constraints(one_of: [:available, :dispatched, :on_scene, :off_duty])
+      default(:available)
+      allow_nil?(false)
+      public?(true)
+    end
+
+    attribute :current_location, :string do
+      public?(true)
+    end
+
+    create_timestamp(:inserted_at)
+    update_timestamp(:updated_at)
+  end
+
+  relationships do
+    has_many :assignments, SuperheroDispatch.Dispatch.Assignment do
+      destination_attribute(:superhero_id)
+    end
+  end
+
+  actions do
+    defaults([:read, :destroy])
+
+    create :create do
+      primary? true
+      accept [:name, :hero_alias, :powers, :status, :current_location]
+    end
+
+    update :update do
+      primary? true
+      require_atomic? false
+
+      accept [:name, :hero_alias, :powers, :status, :current_location]
+
+      change after_action(fn changeset, superhero, _ctx ->
+               # Only update assignment status if the superhero's status actually changed
+               if Ash.Changeset.changing_attribute?(changeset, :status) do
+                 assignments =
+                   Assignment
+                   |> Ash.Query.filter(superhero_id == ^superhero.id)
+                   |> Ash.read!(authorize?: false)
+
+                 Enum.each(assignments, fn assignment ->
+                   Ash.update!(
+                     assignment,
+                     %{superhero_status: superhero.status},
+                     action: :update,
+                     authorize?: false
+                   )
+                 end)
+               end
+
+               {:ok, superhero}
+             end)
+    end
+
+    update :mark_dispatched do
+      accept([])
+      change(set_attribute(:status, :dispatched))
+    end
+
+    update :mark_on_scene do
+      accept([])
+      change(set_attribute(:status, :on_scene))
+    end
+
+    update :mark_available do
+      accept([])
+      change(set_attribute(:status, :available))
+    end
+
+    update :mark_off_duty do
+      accept([])
+      change(set_attribute(:status, :off_duty))
+    end
+  end
+end

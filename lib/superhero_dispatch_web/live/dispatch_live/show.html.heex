@@ -1,0 +1,120 @@
+<div class="px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+    <div class="mb-6">
+      <.link navigate="/" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+        <span>← Back to Dispatch Center</span>
+      </.link>
+    </div>
+    
+<!-- Incident Details -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8 border-l-4 border-red-500">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="font-mono text-lg text-gray-600">
+              #{@incident.incident_number}
+            </span>
+            <span class={"px-3 py-1 text-sm rounded font-semibold #{priority_class(@incident.priority)}"}>
+              {String.upcase(to_string(@incident.priority))}
+            </span>
+            <span class={"px-3 py-1 text-sm rounded font-semibold #{status_class(@incident.status)}"}>
+              {String.upcase(to_string(@incident.status))}
+            </span>
+          </div>
+          <h1 class="text-3xl font-bold text-zinc-900 mb-2">{@incident.incident_type}</h1>
+          <p class="text-gray-600 mb-4">{@incident.description}</p>
+          <p class="text-gray-500">
+            <span class="font-semibold">Location:</span>
+            {@incident.location}
+          </p>
+          <p class="text-gray-500 text-sm mt-2">
+            <span class="font-semibold">Reported:</span>
+            {Calendar.strftime(@incident.reported_at, "%B %d, %Y at %I:%M %p")}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Assigned Superheroes -->
+      <div>
+        <h2 class="text-2xl font-semibold mb-4 text-zinc-800">Assigned Superheroes</h2>
+        <div class="space-y-4" id="assignments" phx-update="stream">
+          <%= for {dom_id, assignment} <- @streams.assignments do %>
+            <div id={dom_id} class="bg-white rounded-lg shadow p-6">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="font-bold text-lg text-zinc-900">
+                    {assignment.superhero_alias}
+                  </h3>
+                  <p class="text-gray-600 text-sm">{assignment.superhero_name}</p>
+                  <p class="text-gray-600 text-sm">{assignment.superhero_status}</p>
+                  <p class="text-gray-600 text-sm">{assignment.superhero_id}</p>
+
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class={"px-3 py-1 text-xs rounded-full font-semibold #{assignment_status_class(assignment.status)}"}>
+                    {String.upcase(to_string(assignment.status))}
+                  </span>
+                  <button
+                    phx-click="remove_assignment"
+                    phx-value-assignment_id={assignment.id}
+                    class="text-red-600 hover:text-red-800 text-sm font-semibold"
+                    data-confirm="Are you sure you want to remove this assignment?"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+              <p class="text-gray-500 text-xs mt-3">
+                Assigned: {Calendar.strftime(assignment.assigned_at, "%B %d at %I:%M %p")}
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+<!-- Available Superheroes -->
+      <div>
+        <h2 class="text-2xl font-semibold mb-4 text-zinc-800">Available Superheroes</h2>
+        <div class="space-y-4" id="superheroes" phx-update="stream">
+          <%= for {dom_id, hero} <- @streams.superheroes do %>
+            <div id={dom_id} class="bg-white rounded-lg shadow p-6">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="font-bold text-lg text-zinc-900">{hero.hero_alias}</h3>
+                  <p class="text-gray-600 text-sm">{hero.name}</p>
+                  <p class="text-gray-600 text-sm">{hero.status}</p>
+                </div>
+                <button
+                  phx-click="assign_hero"
+                  phx-value-hero_id={hero.id}
+                  class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 font-semibold"
+                >
+                  Assign
+                </button>
+              </div>
+
+              <%= if hero.current_location do %>
+                <p class="text-gray-500 text-sm mb-2">
+                  <span class="font-semibold">Location:</span>
+                  {hero.current_location}
+                </p>
+              <% end %>
+
+              <%= unless Enum.empty?(hero.powers) do %>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <%= for power <- hero.powers do %>
+                    <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
+                      {power}
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
