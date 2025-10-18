@@ -17,7 +17,7 @@
         <div class="space-y-4">
           <div id="incidents" phx-update="stream">
             <%= for {dom_id, incident} <- @streams.incidents do %>
-              <.link id={dom_id} navigate={~p"/incidents/#{incident.id}"} class="block">
+              <.link id={dom_id} navigate={~p"/dispatch/#{incident.id}"} class="block">
                 <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500 hover:shadow-lg transition-shadow cursor-pointer">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">

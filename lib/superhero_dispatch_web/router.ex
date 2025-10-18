@@ -18,7 +18,14 @@ defmodule SuperheroDispatchWeb.Router do
     pipe_through :browser
 
     live "/", DispatchLive.Index, :index
-    live "/incidents/:id", DispatchLive.Show, :show
+    live "/dispatch/:id", DispatchLive.Show, :show
+
+    live "/incidents", IncidentLive.Index, :index
+    live "/incidents/new", IncidentLive.Form, :new
+    live "/incidents/:id/edit", IncidentLive.Form, :edit
+
+    live "/incidents/:id", IncidentLive.Show, :show
+    live "/incidents/:id/show/edit", IncidentLive.Show, :edit
 
     live "/superheros", SuperheroLive.Index, :index
     live "/superheros/new", SuperheroLive.Form, :new
