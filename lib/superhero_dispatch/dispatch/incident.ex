@@ -125,7 +125,7 @@ defmodule SuperheroDispatch.Dispatch.Incident do
 
         count =
           SuperheroDispatch.Dispatch.Assignment
-          |> Ash.Query.filter(incident_id == ^incident_id)
+          |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
           |> Ash.read!(authorize?: false)
           |> Enum.count()
 

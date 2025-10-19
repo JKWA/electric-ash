@@ -3,9 +3,6 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     domain: SuperheroDispatch.Dispatch,
     data_layer: AshPostgres.DataLayer
 
-  require Ash.Query
-  alias SuperheroDispatch.Dispatch.Assignment
-
   postgres do
     table("superheroes")
     repo(SuperheroDispatch.Repo)
@@ -63,27 +60,6 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
       require_atomic? false
 
       accept [:name, :hero_alias, :powers, :current_location]
-
-      change after_action(fn changeset, superhero, _ctx ->
-               # Only update assignment status if the superhero's status actually changed
-               if Ash.Changeset.changing_attribute?(changeset, :status) do
-                 assignments =
-                   Assignment
-                   |> Ash.Query.filter(superhero_id == ^superhero.id)
-                   |> Ash.read!(authorize?: false)
-
-                 Enum.each(assignments, fn assignment ->
-                   Ash.update!(
-                     assignment,
-                     %{superhero_status: superhero.status},
-                     action: :update,
-                     authorize?: false
-                   )
-                 end)
-               end
-
-               {:ok, superhero}
-             end)
     end
 
     update :mark_dispatched do

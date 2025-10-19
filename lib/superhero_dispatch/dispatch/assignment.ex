@@ -137,7 +137,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
 
     update :update do
       primary? true
-      accept([:superhero_status, :notes])
+      accept([:notes])
     end
 
     update :mark_en_route do
