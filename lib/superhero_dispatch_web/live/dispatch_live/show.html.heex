@@ -48,6 +48,28 @@
                 <span class="ml-1">{incident.hero_count} {if incident.hero_count == 1, do: "hero", else: "heroes"}</span>
               </div>
             </div>
+
+            <!-- Close/Reopen Incident Buttons -->
+            <div class="mt-6 flex justify-end">
+              <%= if incident.status == :closed do %>
+                <button
+                  phx-click="reopen_incident"
+                  phx-value-incident_id={incident.id}
+                  class="btn btn-warning"
+                >
+                  Reopen Incident
+                </button>
+              <% else %>
+                <button
+                  phx-click="close_incident"
+                  phx-value-incident_id={incident.id}
+                  class="btn btn-error"
+                  data-confirm="Are you sure? This will remove all assigned heroes and close the incident."
+                >
+                  Close Incident
+                </button>
+              <% end %>
+            </div>
           </div>
         </div>
       <% end %>
@@ -79,13 +101,15 @@
                   <p class="text-xs opacity-60">
                     Assigned: {Calendar.strftime(assignment.assigned_at, "%B %d at %I:%M %p")}
                   </p>
-                  <button
-                    phx-click="remove_assignment"
-                    phx-value-assignment_id={assignment.id}
-                    class="btn btn-error btn-sm"
-                  >
-                    Remove
-                  </button>
+                  <%= if @incident.status != :closed do %>
+                    <button
+                      phx-click="remove_assignment"
+                      phx-value-assignment_id={assignment.id}
+                      class="btn btn-error btn-sm"
+                    >
+                      Remove
+                    </button>
+                  <% end %>
                 </div>
               </div>
             </div>
@@ -120,13 +144,15 @@
                       {String.upcase(to_string(hero.status))}
                     </span>
                   </div>
-                  <button
-                    phx-click="assign_hero"
-                    phx-value-hero_id={hero.id}
-                    class="btn btn-primary btn-sm flex-shrink-0"
-                  >
-                    Assign
-                  </button>
+                  <%= if @incident.status != :closed do %>
+                    <button
+                      phx-click="assign_hero"
+                      phx-value-hero_id={hero.id}
+                      class="btn btn-primary btn-sm flex-shrink-0"
+                    >
+                      Assign
+                    </button>
+                  <% end %>
                 </div>
 
                 <%= if hero.current_location do %>

@@ -12,10 +12,14 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
+    # Get the incident for easy access to status
+    incident = Dispatch.get_incident!(id)
+
     socket =
       socket
       |> assign(:page_title, "Incident Details")
       |> assign(:incident_id, id)
+      |> assign(:incident, incident)
       |> sync_stream(:incident, from(i in Incident, where: i.id == ^id), id_key: :id)
       |> sync_stream(:assignments, assignments_query(id), id_key: :id)
       |> sync_stream(:superheroes, available_superheroes_query(), id_key: :id)
@@ -84,10 +88,63 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
   end
 
   @impl true
+  def handle_event("close_incident", %{"incident_id" => id}, socket) do
+    try do
+      incident = Dispatch.get_incident!(id)
+
+      case Dispatch.mark_incident_closed!(incident) do
+        %Incident{} ->
+          {:noreply, put_flash(socket, :info, "Incident closed successfully")}
+
+        _ ->
+          {:noreply, put_flash(socket, :error, "Failed to close incident")}
+      end
+    rescue
+      error ->
+        Logger.error("Failed to close incident #{id}: #{inspect(error)}")
+        {:noreply, put_flash(socket, :error, "Failed to close incident")}
+    end
+  end
+
+  @impl true
+  def handle_event("reopen_incident", %{"incident_id" => id}, socket) do
+    try do
+      incident = Dispatch.get_incident!(id)
+
+      case Dispatch.reopen_incident!(incident) do
+        %Incident{} ->
+          {:noreply, put_flash(socket, :info, "Incident reopened successfully")}
+
+        _ ->
+          {:noreply, put_flash(socket, :error, "Failed to reopen incident")}
+      end
+    rescue
+      error ->
+        Logger.error("Failed to reopen incident #{id}: #{inspect(error)}")
+        {:noreply, put_flash(socket, :error, "Failed to reopen incident")}
+    end
+  end
+
+  @impl true
   def handle_info({:sync, event}, socket) do
     Logger.debug("Sync event: #{inspect(event, pretty: true)}")
 
-    {:noreply, sync_stream_update(socket, event)}
+    socket = sync_stream_update(socket, event)
+
+    # Update incident assign when incident stream changes
+    socket =
+      case event do
+        {:insert, :incident, %{id: id}} when id == socket.assigns.incident_id ->
+          assign(socket, :incident, Dispatch.get_incident!(id))
+
+        {:update, :incident, %{id: id}} when id == socket.assigns.incident_id ->
+          assign(socket, :incident, Dispatch.get_incident!(id))
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
   end
 
   # Helper functions for styling using DaisyUI badge variants

@@ -102,6 +102,22 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         end
       end
 
+      validate fn changeset, _ ->
+        case SuperheroDispatch.Dispatch.get_incident(
+               Ash.Changeset.get_attribute(changeset, :incident_id)
+             ) do
+          {:ok, incident} ->
+            if incident.status == :closed do
+              {:error, field: :incident_id, message: "Cannot assign heroes to closed incidents"}
+            else
+              :ok
+            end
+
+          _ ->
+            {:error, field: :incident_id, message: "Incident not found"}
+        end
+      end
+
       change fn changeset, _ ->
         case SuperheroDispatch.Dispatch.get_superhero(
                Ash.Changeset.get_attribute(changeset, :superhero_id)

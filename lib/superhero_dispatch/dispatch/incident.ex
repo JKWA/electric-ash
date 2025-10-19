@@ -110,9 +110,45 @@ defmodule SuperheroDispatch.Dispatch.Incident do
     end
 
     update :mark_closed do
+      require_atomic? false
       accept([])
+
+      change fn changeset, _ctx ->
+        incident_id = changeset.data.id
+        require Ash.Query
+
+        # Archive all active assignments for this incident
+        SuperheroDispatch.Dispatch.Assignment
+        |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
+        |> Ash.read!(authorize?: false)
+        |> Enum.each(fn assignment ->
+          SuperheroDispatch.Dispatch.delete_assignment!(assignment)
+        end)
+
+        changeset
+      end
+
       change(set_attribute(:status, :closed))
-      change(set_attribute(:closed_at, expr(now())))
+      change(set_attribute(:closed_at, &DateTime.utc_now/0))
+
+      change after_action(fn _changeset, incident, _ctx ->
+               # Explicitly set hero_count to 0 after all assignments are archived
+               incident
+               |> Ash.Changeset.for_update(:update, %{})
+               |> Ash.Changeset.force_change_attribute(:hero_count, 0)
+               |> Ash.update!(authorize?: false)
+
+               {:ok, incident}
+             end)
+    end
+
+    update :reopen do
+      accept([])
+
+      validate(attribute_equals(:status, :closed), message: "Can only reopen closed incidents")
+
+      change(set_attribute(:status, :reported))
+      change(set_attribute(:closed_at, nil))
     end
 
     update :hero_count do
