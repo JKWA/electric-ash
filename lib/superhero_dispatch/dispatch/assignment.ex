@@ -86,58 +86,81 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         :incident_id
       ])
 
+      # Fetch and cache hero and incident once for validation and changes
+      change fn changeset, _ctx ->
+        superhero_id = Ash.Changeset.get_attribute(changeset, :superhero_id)
+        incident_id = Ash.Changeset.get_attribute(changeset, :incident_id)
+
+        changeset =
+          case SuperheroDispatch.Dispatch.get_superhero(superhero_id) do
+            {:ok, hero} ->
+              Ash.Changeset.put_context(changeset, :hero, hero)
+
+            _ ->
+              changeset
+          end
+
+        changeset =
+          case SuperheroDispatch.Dispatch.get_incident(incident_id) do
+            {:ok, incident} ->
+              Ash.Changeset.put_context(changeset, :incident, incident)
+
+            _ ->
+              changeset
+          end
+
+        changeset
+      end
+
+      # Validate hero exists and is available
       validate fn changeset, _ ->
-        case SuperheroDispatch.Dispatch.get_superhero(
-               Ash.Changeset.get_attribute(changeset, :superhero_id)
-             ) do
-          {:ok, hero} ->
+        case changeset.context[:hero] do
+          nil ->
+            {:error, field: :superhero_id, message: "Hero not found"}
+
+          hero ->
             if hero.status == :available do
               :ok
             else
-              {:error, field: :superhero_id, message: "Hero must be available to be assigned. Current status: #{hero.status}"}
+              {:error,
+               field: :superhero_id,
+               message: "Hero must be available to be assigned. Current status: #{hero.status}"}
             end
-
-          _ ->
-            {:error, field: :superhero_id, message: "Hero not found"}
         end
       end
 
+      # Validate incident exists and is not closed
       validate fn changeset, _ ->
-        case SuperheroDispatch.Dispatch.get_incident(
-               Ash.Changeset.get_attribute(changeset, :incident_id)
-             ) do
-          {:ok, incident} ->
+        case changeset.context[:incident] do
+          nil ->
+            {:error, field: :incident_id, message: "Incident not found"}
+
+          incident ->
             if incident.status == :closed do
               {:error, field: :incident_id, message: "Cannot assign heroes to closed incidents"}
             else
               :ok
             end
-
-          _ ->
-            {:error, field: :incident_id, message: "Incident not found"}
         end
       end
 
-      change fn changeset, _ ->
-        case SuperheroDispatch.Dispatch.get_superhero(
-               Ash.Changeset.get_attribute(changeset, :superhero_id)
-             ) do
-          {:ok, hero} ->
+      # Copy hero data to assignment attributes
+      change fn changeset, _ctx ->
+        case changeset.context[:hero] do
+          nil ->
+            changeset
+
+          hero ->
             Ash.Changeset.change_attributes(changeset, %{
               superhero_name: hero.name,
               superhero_alias: hero.hero_alias,
               superhero_status: :dispatched
             })
-
-          _ ->
-            changeset
         end
       end
 
       change after_action(fn _changeset, assignment, _ctx ->
-               if assignment.superhero_id do
-                 SuperheroDispatch.Dispatch.mark_superhero_dispatched!(assignment.superhero_id)
-               end
+               SuperheroDispatch.Dispatch.mark_superhero_dispatched!(assignment.superhero_id)
 
                Logger.info("Updating hero count for incident: #{assignment.incident_id}")
 
@@ -164,13 +187,13 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
     update :mark_on_scene do
       accept([])
       change(set_attribute(:status, :on_scene))
-      change(set_attribute(:arrived_at, DateTime.utc_now()))
+      change(set_attribute(:arrived_at, &DateTime.utc_now/0))
     end
 
     update :mark_completed do
       accept([:notes])
       change(set_attribute(:status, :completed))
-      change(set_attribute(:completed_at, DateTime.utc_now()))
+      change(set_attribute(:completed_at, &DateTime.utc_now/0))
     end
 
     destroy :destroy do
@@ -189,6 +212,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       change after_action(fn changeset, assignment, _ctx ->
                # Log if we're archiving a non-assigned assignment for visibility
                original_status = changeset.context[:original_status]
+
                if original_status && original_status not in [:assigned, :completed] do
                  Logger.warning(
                    "Archiving assignment #{assignment.id} with status #{inspect(original_status)}. " <>
@@ -196,9 +220,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
                  )
                end
 
-               if assignment.superhero_id do
-                 SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)
-               end
+               SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)
 
                incident = SuperheroDispatch.Dispatch.get_incident!(assignment.incident_id)
 

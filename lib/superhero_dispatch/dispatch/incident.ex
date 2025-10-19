@@ -116,16 +116,41 @@ defmodule SuperheroDispatch.Dispatch.Incident do
       change fn changeset, _ctx ->
         incident_id = changeset.data.id
         require Ash.Query
+        require Logger
 
         # Archive all active assignments for this incident
-        SuperheroDispatch.Dispatch.Assignment
-        |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
-        |> Ash.read!(authorize?: false)
-        |> Enum.each(fn assignment ->
-          SuperheroDispatch.Dispatch.delete_assignment!(assignment)
-        end)
+        assignments =
+          SuperheroDispatch.Dispatch.Assignment
+          |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
+          |> Ash.read!(authorize?: false)
 
-        changeset
+        Logger.info(
+          "Closing incident #{incident_id}: archiving #{length(assignments)} active assignment(s)"
+        )
+
+        # Archive each assignment - fail if any fail
+        result =
+          Enum.reduce_while(assignments, :ok, fn assignment, _acc ->
+            case SuperheroDispatch.Dispatch.delete_assignment(assignment) do
+              {:ok, _} ->
+                {:cont, :ok}
+
+              {:error, error} ->
+                Logger.error(
+                  "Failed to archive assignment #{assignment.id} for incident #{incident_id}: #{inspect(error)}"
+                )
+
+                {:halt, {:error, error}}
+            end
+          end)
+
+        case result do
+          :ok ->
+            changeset
+
+          {:error, error} ->
+            Ash.Changeset.add_error(changeset, error)
+        end
       end
 
       change(set_attribute(:status, :closed))
