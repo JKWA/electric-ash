@@ -13,34 +13,34 @@
           <div class="card-body">
             <!-- Title and ID -->
             <div class="flex items-start gap-3 mb-3">
-              <h1 class="text-3xl font-bold flex-1"><%= incident.incident_type %></h1>
+              <h1 class="text-3xl font-bold flex-1">{incident.incident_type}</h1>
               <span class="font-mono text-sm opacity-50 whitespace-nowrap">
-                <%= incident.incident_number %>
+                {incident.incident_number}
               </span>
             </div>
 
             <!-- Badges -->
             <div class="flex items-center gap-2 mb-4 flex-wrap">
               <span class={"badge badge-lg font-semibold #{priority_class(incident.priority)}"}>
-                <%= String.upcase(to_string(incident.priority)) %>
+                {String.upcase(to_string(incident.priority))}
               </span>
               <span class={"badge badge-lg #{status_class(incident.status)}"}>
-                <%= String.upcase(to_string(incident.status)) %>
+                {String.upcase(to_string(incident.status))}
               </span>
             </div>
 
             <!-- Description -->
-            <p class="text-base opacity-80 mb-4"><%= incident.description %></p>
+            <p class="text-base opacity-80 mb-4">{incident.description}</p>
 
             <!-- Meta info grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm opacity-70">
               <div>
                 <span class="font-semibold">Location:</span>
-                <span class="ml-1"><%= incident.location %></span>
+                <span class="ml-1">{incident.location}</span>
               </div>
               <div>
                 <span class="font-semibold">Reported:</span>
-                <span class="ml-1"><%= Calendar.strftime(incident.reported_at, "%B %d, %Y at %I:%M %p") %></span>
+                <span class="ml-1">{Calendar.strftime(incident.reported_at, "%B %d at %I:%M %p")}</span>
               </div>
               <div>
                 <span class="font-semibold">Dispatched:</span>
@@ -104,7 +104,7 @@
                   <div class="flex-1 min-w-0">
                     <h3 class="card-title text-lg">{hero.hero_alias}</h3>
                     <p class="text-sm opacity-70">{hero.name}</p>
-                    <span class={"badge badge-sm mt-2 #{hero_status_class(hero.status)}"}>
+                    <span class={"badge mt-2 #{hero_status_class(hero.status)}"}>
                       {String.upcase(to_string(hero.status))}
                     </span>
                   </div>
@@ -124,7 +124,7 @@
                   </p>
                 <% end %>
 
-                <%= unless Enum.empty?(hero.powers) do %>
+                <%= if not Enum.empty?(hero.powers) do %>
                   <div class="flex flex-wrap gap-2 mt-2">
                     <%= for power <- hero.powers do %>
                       <span class="badge badge-secondary badge-sm">
