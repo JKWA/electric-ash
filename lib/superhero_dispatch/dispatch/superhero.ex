@@ -65,7 +65,9 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     update :mark_dispatched do
       accept([])
 
-      validate(attribute_equals(:status, :available), message: "Can only dispatch available heroes")
+      validate(attribute_equals(:status, :available),
+        message: "Can only dispatch available heroes"
+      )
 
       change(set_attribute(:status, :dispatched))
     end
@@ -73,7 +75,9 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     update :mark_available do
       accept([])
 
-      validate(attribute_does_not_equal(:status, :unavailable), message: "Cannot mark unavailable hero as available through this action")
+      validate(attribute_does_not_equal(:status, :unavailable),
+        message: "Cannot mark unavailable hero as available through this action"
+      )
 
       change(set_attribute(:status, :available))
     end
@@ -81,7 +85,9 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     update :mark_unavailable do
       accept([])
 
-      validate(attribute_equals(:status, :available), message: "Can only mark available heroes as unavailable")
+      validate(attribute_equals(:status, :available),
+        message: "Can only mark available heroes as unavailable"
+      )
 
       change(set_attribute(:status, :unavailable))
     end
@@ -89,7 +95,9 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     update :return_to_duty do
       accept([])
 
-      validate(attribute_equals(:status, :unavailable), message: "Only unavailable heroes can return to duty")
+      validate(attribute_equals(:status, :unavailable),
+        message: "Only unavailable heroes can return to duty"
+      )
 
       change(set_attribute(:status, :available))
     end

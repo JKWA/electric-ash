@@ -17,10 +17,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       |> assign(:page_title, "Incident Details")
       |> assign(:incident_id, id)
       |> sync_stream(:incident, from(i in Incident, where: i.id == ^id), id_key: :id)
-      |> sync_stream(:assignments, assignments_query(id),
-        id_key: :id,
-        reset?: true
-      )
+      |> sync_stream(:assignments, assignments_query(id), id_key: :id)
       |> sync_stream(:superheroes, available_superheroes_query(), id_key: :id)
 
     {:ok, socket}
@@ -70,6 +67,20 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       Ash.Error.Invalid ->
         {:noreply, put_flash(socket, :info, "Assignment already removed")}
     end
+  end
+
+  @impl true
+  def handle_event("refresh_heroes", _params, socket) do
+    Logger.info("Triggering benign update to force hero sync")
+
+    # Touch all heroes to trigger UPDATE events via Electric
+    # Using Repo.update_all to directly update timestamps, which Electric picks up via WAL
+    SuperheroDispatch.Repo.update_all(
+      Superhero,
+      set: [updated_at: DateTime.utc_now()]
+    )
+
+    {:noreply, put_flash(socket, :info, "Heroes refreshed!")}
   end
 
   @impl true
