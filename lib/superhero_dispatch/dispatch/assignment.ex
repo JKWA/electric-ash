@@ -161,10 +161,25 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       require_atomic? false
       soft? true
 
+      # Capture original status before we change it
+      change fn changeset, _ctx ->
+        original_status = changeset.data.status
+        Ash.Changeset.put_context(changeset, :original_status, original_status)
+      end
+
       change set_attribute(:archived_at, &DateTime.utc_now/0)
       change set_attribute(:status, :completed)
 
-      change after_action(fn _changeset, assignment, _ctx ->
+      change after_action(fn changeset, assignment, _ctx ->
+               # Log if we're archiving a non-assigned assignment for visibility
+               original_status = changeset.context[:original_status]
+               if original_status && original_status not in [:assigned, :completed] do
+                 Logger.warning(
+                   "Archiving assignment #{assignment.id} with status #{inspect(original_status)}. " <>
+                     "Hero #{assignment.superhero_alias} was #{inspect(original_status)} when removed."
+                 )
+               end
+
                if assignment.superhero_id do
                  SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)
                end
