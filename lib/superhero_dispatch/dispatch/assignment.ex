@@ -162,6 +162,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       soft? true
 
       change set_attribute(:archived_at, &DateTime.utc_now/0)
+      change set_attribute(:status, :completed)
 
       change after_action(fn _changeset, assignment, _ctx ->
                if assignment.superhero_id do
