@@ -44,7 +44,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
            incident_id: socket.assigns.incident_id
          }) do
       {:ok, _assignment} ->
-        {:noreply, put_flash(socket, :info, "Superhero assigned successfully")}
+        {:noreply, socket}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to assign superhero")}
@@ -57,11 +57,8 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       assignment = Dispatch.get_assignment!(id)
 
       case Dispatch.delete_assignment(assignment) do
-        {:ok, _deleted} ->
-          {:noreply, put_flash(socket, :info, "Assignment removed")}
-
         :ok ->
-          {:noreply, put_flash(socket, :info, "Assignment removed")}
+          {:noreply, socket}
 
         {:error, error} ->
           Logger.error("Failed to delete assignment #{id}: #{inspect(error)}")
@@ -84,7 +81,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
       set: [updated_at: DateTime.utc_now()]
     )
 
-    {:noreply, put_flash(socket, :info, "Heroes refreshed!")}
+    {:noreply, put_flash(socket, :info, "Heroes forced refreshed.")}
   end
 
   @impl true
@@ -94,7 +91,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
       case Dispatch.mark_incident_closed!(incident) do
         %Incident{} ->
-          {:noreply, put_flash(socket, :info, "Incident closed successfully")}
+          {:noreply, socket}
 
         _ ->
           {:noreply, put_flash(socket, :error, "Failed to close incident")}
@@ -113,7 +110,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
       case Dispatch.reopen_incident!(incident) do
         %Incident{} ->
-          {:noreply, put_flash(socket, :info, "Incident reopened successfully")}
+          {:noreply, socket}
 
         _ ->
           {:noreply, put_flash(socket, :error, "Failed to reopen incident")}
