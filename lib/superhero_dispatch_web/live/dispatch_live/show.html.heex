@@ -64,7 +64,6 @@
                   phx-click="close_incident"
                   phx-value-incident_id={incident.id}
                   class="btn btn-error"
-                  data-confirm="Are you sure? This will remove all assigned heroes and close the incident."
                 >
                   Close Incident
                 </button>
@@ -144,7 +143,6 @@
                       {String.upcase(to_string(hero.status))}
                     </span>
                   </div>
-                  <%= if @incident.status != :closed do %>
                     <button
                       phx-click="assign_hero"
                       phx-value-hero_id={hero.id}
@@ -152,7 +150,6 @@
                     >
                       Assign
                     </button>
-                  <% end %>
                 </div>
 
                 <%= if hero.current_location do %>

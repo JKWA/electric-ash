@@ -128,29 +128,12 @@ defmodule SuperheroDispatch.Dispatch.Incident do
           "Closing incident #{incident_id}: archiving #{length(assignments)} active assignment(s)"
         )
 
-        # Archive each assignment - fail if any fail
-        result =
-          Enum.reduce_while(assignments, :ok, fn assignment, _acc ->
-            case SuperheroDispatch.Dispatch.delete_assignment(assignment) do
-              {:ok, _} ->
-                {:cont, :ok}
+        # Archive each assignment
+        Enum.each(assignments, fn assignment ->
+          SuperheroDispatch.Dispatch.delete_assignment!(assignment)
+        end)
 
-              {:error, error} ->
-                Logger.error(
-                  "Failed to archive assignment #{assignment.id} for incident #{incident_id}: #{inspect(error)}"
-                )
-
-                {:halt, {:error, error}}
-            end
-          end)
-
-        case result do
-          :ok ->
-            changeset
-
-          {:error, error} ->
-            Ash.Changeset.add_error(changeset, error)
-        end
+        changeset
       end
 
       change(set_attribute(:status, :closed))
@@ -158,12 +141,13 @@ defmodule SuperheroDispatch.Dispatch.Incident do
 
       change after_action(fn _changeset, incident, _ctx ->
                # Explicitly set hero_count to 0 after all assignments are archived
-               incident
-               |> Ash.Changeset.for_update(:update, %{})
-               |> Ash.Changeset.force_change_attribute(:hero_count, 0)
-               |> Ash.update!(authorize?: false)
+               updated_incident =
+                 incident
+                 |> Ash.Changeset.for_update(:update, %{})
+                 |> Ash.Changeset.force_change_attribute(:hero_count, 0)
+                 |> Ash.update!(authorize?: false)
 
-               {:ok, incident}
+               {:ok, updated_incident}
              end)
     end
 

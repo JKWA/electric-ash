@@ -38,10 +38,7 @@ defmodule SuperheroDispatchWeb.Layouts do
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
-        <a href="/" class="flex items-center gap-2">
-          <img src={~p"/images/app-icon.svg"} width="36" alt="App logo" />
-          <span class="text-sm font-semibold text-gray-700">Electric Ash</span>
-        </a>
+        <span class="text-md font-semibold text-gray-500">Electric Ash</span>
       </div>
 
       <div class="flex-none">
