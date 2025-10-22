@@ -89,7 +89,7 @@ defmodule SuperheroDispatch.Dispatch.Incident do
 
     update :update do
       primary?(true)
-      accept([:incident_type, :description, :location, :priority, :status])
+      accept([:incident_type, :description, :location, :priority])
     end
 
     update :mark_dispatched do

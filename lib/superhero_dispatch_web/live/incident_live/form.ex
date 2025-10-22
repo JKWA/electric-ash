@@ -51,16 +51,6 @@ defmodule SuperheroDispatchWeb.IncidentLive.Form do
               ]
             }
           />
-          <.input
-            field={@form[:status]}
-            type="select"
-            label="Status"
-            options={
-              Ash.Resource.Info.attribute(SuperheroDispatch.Dispatch.Incident, :status).constraints[
-                :one_of
-              ]
-            }
-          />
         <% end %>
 
         <.button phx-disable-with="Saving..." variant="primary">Save Incident</.button>
@@ -90,6 +80,7 @@ defmodule SuperheroDispatchWeb.IncidentLive.Form do
   end
 
   defp return_to("show"), do: "show"
+  defp return_to("dispatch"), do: "dispatch"
   defp return_to(_), do: "index"
 
   @impl true
@@ -130,4 +121,5 @@ defmodule SuperheroDispatchWeb.IncidentLive.Form do
 
   defp return_path("index", _incident), do: ~p"/incidents"
   defp return_path("show", incident), do: ~p"/incidents/#{incident.id}"
+  defp return_path("dispatch", incident), do: ~p"/dispatch/#{incident.id}"
 end

@@ -49,8 +49,11 @@
               </div>
             </div>
 
-            <!-- Close/Reopen Incident Buttons -->
-            <div class="mt-6 flex justify-end">
+            <!-- Edit and Close/Reopen Incident Buttons -->
+            <div class="mt-6 flex justify-end gap-2">
+              <.link navigate={~p"/incidents/#{incident.id}/edit?return_to=dispatch"} class="btn btn-outline">
+                Edit
+              </.link>
               <%= if incident.status == :closed do %>
                 <button
                   phx-click="reopen_incident"

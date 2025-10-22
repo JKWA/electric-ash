@@ -12,14 +12,10 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    # Get the incident for easy access to status
-    incident = Dispatch.get_incident!(id)
-
     socket =
       socket
       |> assign(:page_title, "Incident Details")
       |> assign(:incident_id, id)
-      |> assign(:incident, incident)
       |> sync_stream(:incident, from(i in Incident, where: i.id == ^id), id_key: :id)
       |> sync_stream(:assignments, assignments_query(id), id_key: :id)
       |> sync_stream(:superheroes, available_superheroes_query(), id_key: :id)
