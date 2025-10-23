@@ -26,7 +26,7 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Show do
 
         <:item title="Hero alias">{@superhero.hero_alias}</:item>
 
-        <:item title="Powers">{@superhero.powers}</:item>
+        <:item title="Powers">{Enum.join(@superhero.powers, ", ")}</:item>
 
         <:item title="Status">{@superhero.status}</:item>
 

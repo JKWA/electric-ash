@@ -25,7 +25,7 @@ defmodule SuperheroDispatchWeb.SuperheroLive.Index do
 
         <:col :let={{_id, superhero}} label="Hero alias">{superhero.hero_alias}</:col>
 
-        <:col :let={{_id, superhero}} label="Powers">{superhero.powers}</:col>
+        <:col :let={{_id, superhero}} label="Powers">{Enum.join(superhero.powers, ", ")}</:col>
 
         <:col :let={{_id, superhero}} label="Status">{superhero.status}</:col>
 
