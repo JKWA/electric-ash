@@ -12,7 +12,7 @@ defmodule SuperheroDispatchWeb.DispatchLive.Index do
      socket
      |> assign(:page_title, "Superhero Dispatch")
      |> sync_stream(:incidents, Incident, id_key: :id)
-     |> sync_stream(:superheroes, from(s in Superhero), id_key: :id)}
+     |> sync_stream(:superheroes, Superhero, id_key: :id)}
   end
 
   @impl true
