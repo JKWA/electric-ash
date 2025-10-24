@@ -23,6 +23,7 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
 
     attribute :powers, {:array, :string} do
       default([])
+      allow_nil?(false)
       public?(true)
     end
 
@@ -57,8 +58,6 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
 
     update :update do
       primary? true
-      require_atomic? false
-
       accept [:name, :hero_alias, :powers, :current_location]
     end
 
@@ -75,8 +74,8 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     update :mark_available do
       accept([])
 
-      validate(attribute_does_not_equal(:status, :unavailable),
-        message: "Cannot mark unavailable hero as available through this action"
+      validate(attribute_equals(:status, :dispatched),
+        message: "Can only mark dispatched hero as available"
       )
 
       change(set_attribute(:status, :available))

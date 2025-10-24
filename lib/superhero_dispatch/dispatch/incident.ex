@@ -3,6 +3,12 @@ defmodule SuperheroDispatch.Dispatch.Incident do
     domain: SuperheroDispatch.Dispatch,
     data_layer: AshPostgres.DataLayer
 
+  alias SuperheroDispatch.Dispatch.Changes.{
+    ArchiveAllAssignmentsOnClose,
+    ResetHeroCountOnClose,
+    RecalculateHeroCount
+  }
+
   postgres do
     table("incidents")
     repo(SuperheroDispatch.Repo)
@@ -95,87 +101,54 @@ defmodule SuperheroDispatch.Dispatch.Incident do
     update :mark_dispatched do
       accept([])
       change(set_attribute(:status, :dispatched))
-      change(set_attribute(:dispatched_at, expr(now())))
+      change(set_attribute(:dispatched_at, &DateTime.utc_now/0))
     end
 
     update :mark_in_progress do
       accept([])
+
+      validate(attribute_equals(:status, :dispatched),
+        message: "Can only mark dispatched incidents as in progress"
+      )
+
       change(set_attribute(:status, :in_progress))
     end
 
     update :mark_resolved do
       accept([])
+
+      validate(attribute_equals(:status, :in_progress),
+        message: "Can only mark in-progress incidents as resolved"
+      )
+
       change(set_attribute(:status, :resolved))
-      change(set_attribute(:resolved_at, expr(now())))
+      change(set_attribute(:resolved_at, &DateTime.utc_now/0))
     end
 
     update :mark_closed do
       require_atomic? false
       accept([])
 
-      change fn changeset, _ctx ->
-        incident_id = changeset.data.id
-        require Ash.Query
-        require Logger
+      change ArchiveAllAssignmentsOnClose
 
-        # Archive all active assignments for this incident
-        assignments =
-          SuperheroDispatch.Dispatch.Assignment
-          |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
-          |> Ash.read!(authorize?: false)
+      change set_attribute(:status, :closed)
+      change set_attribute(:closed_at, &DateTime.utc_now/0)
 
-        Logger.info(
-          "Closing incident #{incident_id}: archiving #{length(assignments)} active assignment(s)"
-        )
-
-        # Archive each assignment
-        Enum.each(assignments, fn assignment ->
-          SuperheroDispatch.Dispatch.delete_assignment!(assignment)
-        end)
-
-        changeset
-      end
-
-      change(set_attribute(:status, :closed))
-      change(set_attribute(:closed_at, &DateTime.utc_now/0))
-
-      change after_action(fn _changeset, incident, _ctx ->
-               # Explicitly set hero_count to 0 after all assignments are archived
-               updated_incident =
-                 incident
-                 |> Ash.Changeset.for_update(:update, %{})
-                 |> Ash.Changeset.force_change_attribute(:hero_count, 0)
-                 |> Ash.update!(authorize?: false)
-
-               {:ok, updated_incident}
-             end)
+      change ResetHeroCountOnClose
     end
 
     update :reopen do
       accept([])
-
-      validate(attribute_equals(:status, :closed), message: "Can only reopen closed incidents")
 
       change(set_attribute(:status, :reported))
       change(set_attribute(:closed_at, nil))
     end
 
     update :hero_count do
-      require_atomic?(false)
+      require_atomic? false
       accept([])
 
-      change fn changeset, _ ->
-        incident_id = changeset.data.id
-        require Ash.Query
-
-        count =
-          SuperheroDispatch.Dispatch.Assignment
-          |> Ash.Query.filter(incident_id == ^incident_id and is_nil(archived_at))
-          |> Ash.read!(authorize?: false)
-          |> Enum.count()
-
-        Ash.Changeset.change_attribute(changeset, :hero_count, count)
-      end
+      change RecalculateHeroCount
     end
   end
 end

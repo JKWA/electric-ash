@@ -3,11 +3,9 @@ defmodule SuperheroDispatchWeb.DispatchLive.Index do
   import Phoenix.Sync.LiveView
 
   alias SuperheroDispatch.Dispatch.{Incident, Superhero}
-  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
-    # Using Phoenix.Sync for real-time reads
     {:ok,
      socket
      |> assign(:page_title, "Superhero Dispatch")
@@ -20,7 +18,6 @@ defmodule SuperheroDispatchWeb.DispatchLive.Index do
     {:noreply, sync_stream_update(socket, event)}
   end
 
-  # Helper functions for styling using DaisyUI badge variants
   defp priority_class(:critical), do: "badge-error"
   defp priority_class(:high), do: "badge-warning"
   defp priority_class(:medium), do: "badge-info"

@@ -6,6 +6,13 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
 
   require Logger
 
+  alias SuperheroDispatch.Dispatch.Changes.{
+    FetchAndCacheRelatedRecords,
+    CopyHeroDataToAssignment,
+    UpdateHeroAndIncidentOnAssignment,
+    UpdateHeroAndIncidentOnUnassignment
+  }
+
   postgres do
     table("assignments")
     repo(SuperheroDispatch.Repo)
@@ -86,33 +93,8 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         :incident_id
       ])
 
-      # Fetch and cache hero and incident once for validation and changes
-      change fn changeset, _ctx ->
-        superhero_id = Ash.Changeset.get_attribute(changeset, :superhero_id)
-        incident_id = Ash.Changeset.get_attribute(changeset, :incident_id)
+      change FetchAndCacheRelatedRecords
 
-        changeset =
-          case SuperheroDispatch.Dispatch.get_superhero(superhero_id) do
-            {:ok, hero} ->
-              Ash.Changeset.put_context(changeset, :hero, hero)
-
-            _ ->
-              changeset
-          end
-
-        changeset =
-          case SuperheroDispatch.Dispatch.get_incident(incident_id) do
-            {:ok, incident} ->
-              Ash.Changeset.put_context(changeset, :incident, incident)
-
-            _ ->
-              changeset
-          end
-
-        changeset
-      end
-
-      # Validate hero exists and is available
       validate fn changeset, _ ->
         case changeset.context[:hero] do
           nil ->
@@ -129,7 +111,6 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         end
       end
 
-      # Validate incident exists and is not closed
       validate fn changeset, _ ->
         case changeset.context[:incident] do
           nil ->
@@ -144,34 +125,9 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
         end
       end
 
-      # Copy hero data to assignment attributes
-      change fn changeset, _ctx ->
-        case changeset.context[:hero] do
-          nil ->
-            changeset
+      change CopyHeroDataToAssignment
 
-          hero ->
-            Ash.Changeset.change_attributes(changeset, %{
-              superhero_name: hero.name,
-              superhero_alias: hero.hero_alias,
-              superhero_status: :dispatched
-            })
-        end
-      end
-
-      change after_action(fn _changeset, assignment, _ctx ->
-               SuperheroDispatch.Dispatch.mark_superhero_dispatched!(assignment.superhero_id)
-
-               Logger.info("Updating hero count for incident: #{assignment.incident_id}")
-
-               incident = SuperheroDispatch.Dispatch.get_incident!(assignment.incident_id)
-
-               incident
-               |> Ash.Changeset.for_update(:hero_count)
-               |> Ash.update!(authorize?: false)
-
-               {:ok, assignment}
-             end)
+      change UpdateHeroAndIncidentOnAssignment
     end
 
     update :update do
@@ -200,7 +156,6 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       require_atomic? false
       soft? true
 
-      # Capture original status before we change it
       change fn changeset, _ctx ->
         original_status = changeset.data.status
         Ash.Changeset.put_context(changeset, :original_status, original_status)
@@ -208,28 +163,7 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
 
       change set_attribute(:archived_at, &DateTime.utc_now/0)
       change set_attribute(:status, :completed)
-
-      change after_action(fn changeset, assignment, _ctx ->
-               # Log if we're archiving a non-assigned assignment for visibility
-               original_status = changeset.context[:original_status]
-
-               if original_status && original_status not in [:assigned, :completed] do
-                 Logger.warning(
-                   "Archiving assignment #{assignment.id} with status #{inspect(original_status)}. " <>
-                     "Hero #{assignment.superhero_alias} was #{inspect(original_status)} when removed."
-                 )
-               end
-
-               SuperheroDispatch.Dispatch.mark_superhero_available!(assignment.superhero_id)
-
-               incident = SuperheroDispatch.Dispatch.get_incident!(assignment.incident_id)
-
-               incident
-               |> Ash.Changeset.for_update(:hero_count)
-               |> Ash.update!(authorize?: false)
-
-               {:ok, assignment}
-             end)
+      change UpdateHeroAndIncidentOnUnassignment
     end
   end
 end
