@@ -122,8 +122,8 @@ defmodule SuperheroDispatchWeb.DispatchLive.Show do
   def handle_info({:sync, event}, socket) do
     Logger.debug("Sync event: #{inspect(event, pretty: true)}")
 
-    {:noreply, sync_stream_update(socket, event)}
-    # {:noreply, socket}
+    # {:noreply, sync_stream_update(socket, event)}
+    {:noreply, socket}
   end
 
   # Helper functions for styling using DaisyUI badge variants

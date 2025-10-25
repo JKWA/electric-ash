@@ -9,47 +9,47 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
   end
 
   attributes do
-    uuid_primary_key(:id)
+    uuid_primary_key :id
 
     attribute :name, :string do
-      allow_nil?(false)
-      public?(true)
+      allow_nil? false
+      public? true
     end
 
     attribute :hero_alias, :string do
-      allow_nil?(false)
-      public?(true)
+      allow_nil? false
+      public? true
     end
 
     attribute :powers, {:array, :string} do
-      default([])
-      allow_nil?(false)
-      public?(true)
+      default []
+      allow_nil? false
+      public? true
     end
 
     attribute :status, :atom do
-      constraints(one_of: [:available, :unavailable, :dispatched])
-      default(:available)
-      allow_nil?(false)
-      public?(true)
+      constraints one_of: [:available, :unavailable, :dispatched]
+      default :available
+      allow_nil? false
+      public? true
     end
 
     attribute :current_location, :string do
-      public?(true)
+      public? true
     end
 
-    create_timestamp(:inserted_at)
-    update_timestamp(:updated_at)
+    create_timestamp :inserted_at
+    update_timestamp :updated_at
   end
 
   relationships do
     has_many :assignments, SuperheroDispatch.Dispatch.Assignment do
-      destination_attribute(:superhero_id)
+      destination_attribute :superhero_id
     end
   end
 
   actions do
-    defaults([:read, :destroy])
+    defaults [:read, :destroy]
 
     create :create do
       primary? true
@@ -62,17 +62,16 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     end
 
     update :mark_dispatched do
-      accept([])
+      accept []
 
-      validate(attribute_equals(:status, :available),
+      validate attribute_equals(:status, :available),
         message: "Can only dispatch available heroes"
-      )
 
-      change(set_attribute(:status, :dispatched))
+      change set_attribute(:status, :dispatched)
     end
 
     update :mark_available do
-      accept([])
+      accept []
 
       validate(attribute_equals(:status, :dispatched),
         message: "Can only mark dispatched hero as available"
@@ -82,7 +81,7 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     end
 
     update :mark_unavailable do
-      accept([])
+      accept []
 
       validate(attribute_equals(:status, :available),
         message: "Can only mark available heroes as unavailable"
@@ -92,13 +91,13 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
     end
 
     update :return_to_duty do
-      accept([])
+      accept []
 
       validate(attribute_equals(:status, :unavailable),
         message: "Only unavailable heroes can return to duty"
       )
 
-      change(set_attribute(:status, :available))
+      change set_attribute(:status, :available)
     end
   end
 end
