@@ -77,7 +77,7 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
         message: "Can only mark dispatched hero as available"
       )
 
-      change(set_attribute(:status, :available))
+      change set_attribute(:status, :available)
     end
 
     update :mark_unavailable do
@@ -87,7 +87,7 @@ defmodule SuperheroDispatch.Dispatch.Superhero do
         message: "Can only mark available heroes as unavailable"
       )
 
-      change(set_attribute(:status, :unavailable))
+      change set_attribute(:status, :unavailable)
     end
 
     update :return_to_duty do
