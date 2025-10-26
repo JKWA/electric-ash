@@ -16,8 +16,7 @@ defmodule SuperheroDispatch.Dispatch.Changes.CopyHeroDataToAssignment do
       hero ->
         Ash.Changeset.change_attributes(changeset, %{
           superhero_name: hero.name,
-          superhero_alias: hero.hero_alias,
-          superhero_status: :dispatched
+          superhero_alias: hero.hero_alias
         })
     end
   end

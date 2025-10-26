@@ -42,13 +42,6 @@ defmodule SuperheroDispatch.Dispatch.Assignment do
       public? true
     end
 
-    attribute :superhero_status, :atom do
-      constraints one_of: [:dispatched]
-      default :dispatched
-      allow_nil? false
-      public? true
-    end
-
     attribute :notes, :string do
       public? true
     end
