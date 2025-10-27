@@ -15,7 +15,7 @@ The demo application manages superhero dispatches to incidents, showcasing how t
 
 ### Prerequisites
 
-- Elixir 1.14+
+- Elixir
 - Docker & Docker Compose
 
 ### Quick Start
